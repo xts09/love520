@@ -1,0 +1,335 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>520 - 致徐思捷</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #ffe6f0, #ffffff);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #333;
+      padding-bottom: 50px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .container {
+      max-width: 600px;
+      padding: 20px;
+      position: relative;
+      z-index: 2;
+    }
+    h1 {
+      color: #ff6f91;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #ff9ab5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #ff7090;
+    }
+    .heart {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 3;
+    }
+    .egg {
+      display: none;
+      color: #ff6f91;
+      font-size: 1.2em;
+      margin-top: 20px;
+      animation: float 3s ease-in-out;
+    }
+    .timeline {
+      margin-top: 40px;
+      position: relative;
+      padding: 20px 0;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #ffccd5;
+      transform: translateX(-50%);
+    }
+    .timeline-item {
+      position: relative;
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 1s ease-in;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      width: 12px;
+      height: 12px;
+      background: #ff6f91;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+    .timeline-content {
+      background: #fff0f5;
+      padding: 10px 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      max-width: 300px;
+      text-align: left;
+    }
+    .timeline-content h3 {
+      color: #ff6f91;
+      font-size: 1.1em;
+      margin: 0 0 5px;
+    }
+    .timeline-content p {
+      margin: 0;
+      font-size: 0.9em;
+    }
+    /* 爱心雨样式 */
+    .heart-rain {
+      position: absolute;
+      font-size: 20px;
+      color: #ff6f91;
+      pointer-events: none;
+      z-index: 1;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-100px); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
+    }
+    /* 回忆照片样式 */
+    .memory-photo {
+      position: absolute;
+      width: 100px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      z-index: 1;
+      animation: fadeInPhoto 1s ease-in forwards;
+    }
+    @keyframes fadeInPhoto {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 0.7; transform: scale(1); }
+    }
+    @keyframes float {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-50px); opacity: 0; }
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>520，致我的徐思捷 💖</h1>
+    <div id="quotes">
+      <p id="quote-text">徐思捷，你是我的星辰大海，爱你永不变。</p>
+      <button onclick="nextQuote()">下一句情话</button>
+      <button onclick="toggleMusic()" id="musicBtn">播放音乐</button>
+      <button onclick="showMemoryPhotos()">查看更多回忆</button>
+    </div>
+    <div class="heart" onclick="showEgg()">❤️</div>
+    <div id="egg" class="egg">彩蛋：思捷，我会一直爱你到永远！💕</div>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <h3>2023.10.15 🎉</h3>
+          <p>我们第一次相遇，在校园的秋天，你穿着白色毛衣，笑得像阳光一样温暖。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <h3>2023.12.01 🌟</h3>
+          <p>第一次约会，我们一起去看电影，你偷偷牵了我的手，我的心跳得好快。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <h3>2024.02.14 💘</h3>
+          <p>情人节那天，我们正式在一起，你说会一直陪着我，我好幸福。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <h3>2025.05.20 💕</h3>
+          <p>今天是520，我做了这个小网站，希望你喜欢，爱你永远！</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <audio id="bgMusic" loop>
+    <source src="https://www.kozco.com/tech/piano2-CoolEdit.mp3" type="audio/mpeg">
+    你的浏览器不支持音频播放。
+  </audio>
+
+  <script>
+    const quotes = [
+      "徐思捷，你是我的星辰大海，爱你永不变。",
+      "520，愿我们的每一天都像今天一样甜蜜。",
+      "有你在身边，世界都变得温柔了。",
+      "你笑的样子，是我心动的起点。",
+      "和你一起，时间都变得不够用，因为我只想一直看着你。"
+    ];
+    let quoteIndex = 0;
+    let isMusicPlaying = false;
+    const audio = document.getElementById("bgMusic");
+    const musicBtn = document.getElementById("musicBtn");
+
+    // 爱心雨效果
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart-rain";
+      heart.innerHTML = "❤️";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.animationDuration = Math.random() * 3 + 3 + "s";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
+    }
+    setInterval(createHeart, 500);
+
+    // 回忆照片浮现效果
+    const memoryPhotos = [
+      "https://via.placeholder.com/300x200.png?text=Memory+Photo+1",
+      "https://via.placeholder.com/300x200.png?text=Memory+Photo+2",
+      "https://via.placeholder.com/300x200.png?text=Memory+Photo+3",
+      "https://via.placeholder.com/300x200.png?text=Memory+Photo+4",
+      "https://via.placeholder.com/300x200.png?text=Memory+Photo+5",
+      "https://via.placeholder.com/300x200.png?text=Memory+Photo+6",
+      "https://via.placeholder.com/300x200.png?text=Memory+Photo+7",
+      "https://via.placeholder.com/300x200.png?text=Memory+Photo+8"
+    ];
+    let photosShown = false;
+
+    function showMemoryPhotos() {
+      if (photosShown) return; // 避免重复添加
+      photosShown = true;
+
+      // 将页面划分为网格区域，确保分布均匀
+      const cols = 4; // 4列
+      const rows = Math.ceil(memoryPhotos.length / cols); // 根据照片数量计算行数
+      const photoWidth = 100; // 照片宽度
+      const photoHeight = 70; // 照片高度
+      const margin = 20; // 照片间距
+
+      memoryPhotos.forEach((photoSrc, index) => {
+        setTimeout(() => {
+          const img = document.createElement("img");
+          img.src = photoSrc;
+          img.className = "memory-photo";
+
+          // 计算网格位置
+          const col = index % cols;
+          const row = Math.floor(index / cols);
+          const x = (col * (window.innerWidth / cols)) + (Math.random() * (window.innerWidth / cols - photoWidth - margin * 2)) + margin;
+          const y = (row * (window.innerHeight / rows)) + (Math.random() * (window.innerHeight / rows - photoHeight - margin * 2)) + margin;
+
+          // 确保照片不超出边界
+          img.style.left = Math.min(Math.max(x, 0), window.innerWidth - photoWidth) + "px";
+          img.style.top = Math.min(Math.max(y, 0), window.innerHeight - photoHeight) + "px";
+
+          document.body.appendChild(img);
+        }, index * 1000); // 每张照片间隔1秒浮现
+      });
+    }
+
+    function nextQuote() {
+      quoteIndex = (quoteIndex + 1) % quotes.length;
+      document.getElementById("quote-text").textContent = quotes[quoteIndex];
+    }
+
+    function showEgg() {
+      const egg = document.getElementById("egg");
+      egg.style.display = "block";
+      setTimeout(() => {
+        egg.style.display = "none";
+      }, 3000);
+    }
+
+    function toggleMusic() {
+      if (isMusicPlaying) {
+        audio.pause();
+        musicBtn.textContent = "播放音乐";
+      } else {
+        audio.play().catch(() => alert("请再次点击播放音乐，浏览器需要交互！"));
+        musicBtn.textContent = "暂停音乐";
+      }
+      isMusicPlaying = !isMusicPlaying;
+    }
+  </script>
+</body>
+</html>
